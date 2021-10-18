@@ -1,0 +1,22 @@
+{
+	"name": "webbmaffian/logger",
+	"description": "Webbmaffian Logger",
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Ivar Johansson",
+			"email": "ivar@webbmaffian.se"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Webbmaffian\\Logger\\": "src/"
+		}
+	},
+	"config": {
+		"classmap-authoritative": true
+	},
+	"require": {
+		"php": "^7.0.0"
+	}
+}
