@@ -2,6 +2,7 @@
 Composer logger package.
 
 ## Example usage
+
 ```php
 <?php
 $logger = new \Webbmaffian\Logger\File_Logger();
@@ -16,6 +17,7 @@ $logger->info(
 ```
 
 Or if you're using the [Mafia Logger](https://github.com/webbmaffian/mafia-logger) WordPress plugin:
+
 ```php
 <?php
 $logger = Log::logger();
@@ -33,6 +35,7 @@ $logger->info(
 
 ### $logger->{SEVERITY}(mixed ...$args): void
 Takes any kind and quantity of arguments.
+
 ```php
 <?php
 $logger->emergency(); // Or: $logger->fatal();
@@ -44,6 +47,7 @@ $logger->notice();
 $logger->informational(); // Or: $logger->info();
 $logger->debug();
 ```
+
 | Severity      | Description                                                                                                                       |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | emergency     | System is unusable, e.g. total datacenter outages.                                                                                |
@@ -57,6 +61,7 @@ $logger->debug();
 
 ### $logger->index(string|array $key, string $value): Index
 Returns [indices](https://github.com/webbmaffian/log.mafia.tools#log-entry-indices) that can be added as argument to e.g. `$logger->info()` or `$logger->set_context()`.
+
 ```php
 <?php
 $logger->info(
@@ -78,9 +83,24 @@ $logger->info(
     ]
   ])
 );
+```
 
 ### $logger->set_context(...$args): int
-Can be used just like the logging methods, and will append its arguments to all following log entries until `$logger->reset_logger()` is called. Any call will append a new context layer. Returns a context number.
+Can be used just like the logging methods, but will append its arguments to all following log entries until `$logger->reset_logger()` is called. Any call will append a new context layer while keeping the previous context layers. Returns a context number.
+
+```php
+<?php
+$logger->set_context($logger->index('foo', 'bar'));
+$logger->info('Hello'); // Will have the index foo:bar
+
+$logger->set_context($logger->index('hello', 'world'));
+$logger->info('Hello again'); // Will have the indices foo:bar and hello:world
+
+$logger->reset_context();
+$logger->info('Bye'); // Will have the index foo:bar
+
+$logger->reset_context();
+```
 
 ### $logger->reset_context(?int $context): void
 Resets the context to the provided context number, or to the previous context if not provided.
