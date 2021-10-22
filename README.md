@@ -33,7 +33,7 @@ $logger->info(
 
 ## Methods
 
-### $logger->{SEVERITY}(mixed ...$args): void
+### $logger->$severity(mixed ...$args): void
 Takes any kind and quantity of arguments.
 
 ```php
@@ -68,9 +68,11 @@ $logger->info(
   $logger->index('key', 'value'),
   $logger->index(['multiple' => 'keys', 'andMultiple' => 'values'])
 );
+```
 
 ### $logger->meta(string|array $key, mixed $value): Meta
 Returns meta that can be added as argument to e.g. `$logger->info()` or `$logger->set_context()`. Can contain anything.
+
 ```php
 <?php
 $logger->info(
