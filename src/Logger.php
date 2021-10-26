@@ -1,6 +1,7 @@
 <?php
 namespace Webbmaffian\Logger;
 use Throwable;
+use JsonSerializable;
 
 const EMERGENCY = 0;
 const ALERT = 1;
@@ -99,6 +100,10 @@ abstract class Logger {
 	}
 
 	public function meta($key, $value = ''): Meta {
+		if(is_object($key) && $key instanceof JsonSerializable) {
+			return new Meta((array)($key->jsonSerialize()));
+		}
+
 		return new Meta(is_array($key) ? $key : [$key => $value]);
 	}
 
