@@ -94,7 +94,7 @@ abstract class Logger {
 		$this->log(INFORMATIONAL, $args);
 	}
 
-	public function index($key, $value = '1'): Index {
+	public function index($key, $value = '#'): Index {
 		return new Index(is_array($key) ? $key : [$key => $value]);
 	}
 
@@ -178,7 +178,7 @@ abstract class Logger {
 			if($this->options['message_handler']($arg, $message_parts, $entry)) {
 				continue;
 			}
-			
+
 			if($arg instanceof Throwable) {
 				$message_parts[] = $arg->getMessage();
 				$stacktrace = self::get_stacktrace($arg);
