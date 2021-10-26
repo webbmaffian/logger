@@ -25,6 +25,12 @@ abstract class Logger {
 				return (empty($item['file']) || $item['file'] !== __FILE__);
 			};
 		}
+
+		if(!isset($this->options['message_handler']) || !is_callable($this->options['message_handler'])) {
+			$this->options['message_handler'] = function($arg, &$message_parts, &$entry) {
+				return false;
+			};
+		}
 	}
 
 
@@ -169,6 +175,10 @@ abstract class Logger {
 		}
 
 		foreach($args as $arg) {
+			if($this->options['message_handler']($arg, $message_parts, $entry)) {
+				continue;
+			}
+			
 			if($arg instanceof Throwable) {
 				$message_parts[] = $arg->getMessage();
 				$stacktrace = self::get_stacktrace($arg);
