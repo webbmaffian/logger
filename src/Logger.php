@@ -129,7 +129,7 @@ abstract class Logger {
 		$entry = [
 			'app' => 'php',
 			'timestamp' => intval($timestamp * 1000),
-			'host' => strtok($_SERVER['HTTP_HOST'] ?? '', ':') ?: gethostname(),
+			'host' => strtok($_SERVER['HTTP_HOST'] ?? '', ':') ?: 'localhost',
 			'severity' => $severity,
 			'facility' => 1,
 			'indices' => [],
