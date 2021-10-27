@@ -130,12 +130,15 @@ abstract class Logger {
 			'app' => 'php',
 			'timestamp' => intval($timestamp * 1000),
 			'host' => strtok($_SERVER['HTTP_HOST'] ?? '', ':') ?: gethostname(),
-			'httpMethod' => $_SERVER['REQUEST_METHOD'],
 			'severity' => $severity,
 			'facility' => 1,
 			'indices' => [],
 			'meta' => []
 		];
+
+		if(isset($_SERVER['REQUEST_METHOD'])) {
+			$entry['httpMethod'] = $_SERVER['REQUEST_METHOD'];
+		}
 
 		if(is_null($this->last_timestamp) && isset($_SERVER['REQUEST_TIME_FLOAT'])) {
 			$this->last_timestamp = $_SERVER['REQUEST_TIME_FLOAT'];
@@ -221,17 +224,15 @@ abstract class Logger {
 
 		$entry['message'] = $message;
 
-		if(!isset($entry['stacktrace'])) {
-			if(is_null($entry['stacktrace'])) {
-				unset($entry['stacktrace']);
+		if(!array_key_exists('stacktrace', $entry)) {
+			if(!$stacktrace) {
+				$stacktrace = $this->create_stacktrace();
 			}
-			else {
-				if(!$stacktrace) {
-					$stacktrace = $this->create_stacktrace();
-				}
 
-				$entry['stacktrace'] = $stacktrace;
-			}
+			$entry['stacktrace'] = $stacktrace;
+		}
+		elseif(is_null($entry['stacktrace'])) {
+			unset($entry['stacktrace']);
 		}
 
 		if(empty($entry['indices'])) unset($entry['indices']);
