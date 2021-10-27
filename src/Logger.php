@@ -221,11 +221,13 @@ abstract class Logger {
 
 		$entry['message'] = $message;
 
-		if(!$stacktrace) {
-			$stacktrace = $this->create_stacktrace();
-		}
+		if(!isset($entry['stacktrace'])) {
+			if(!$stacktrace) {
+				$stacktrace = $this->create_stacktrace();
+			}
 
-		$entry['stacktrace'] = $stacktrace;
+			$entry['stacktrace'] = $stacktrace;
+		}
 
 		if(empty($entry['indices'])) unset($entry['indices']);
 		if(empty($entry['meta'])) unset($entry['meta']);
