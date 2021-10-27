@@ -221,7 +221,7 @@ abstract class Logger {
 
 		$entry['message'] = $message;
 
-		if(!isset($entry['stacktrace'])) {
+		if(!isset($entry['stacktrace']) && !is_null($entry['stacktrace'])) {
 			if(!$stacktrace) {
 				$stacktrace = $this->create_stacktrace();
 			}
