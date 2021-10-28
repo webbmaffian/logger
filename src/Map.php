@@ -5,7 +5,7 @@ use ArrayAccess;
 abstract class Map implements ArrayAccess {
 	private $data = [];
 
-	public function __construct(array $data) {
+	public function __construct(array $data = []) {
 		$this->data = $data;
 	}
 

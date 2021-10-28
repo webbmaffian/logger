@@ -100,12 +100,27 @@ abstract class Logger {
 	}
 
 	/**
-	 * Return an Index object, to be used in logging or context.
+	 * Return an Index object, to be used in logging or context. Non-scalar values will be dropped.
 	 * @param string|array $key Key string, or key-value array
 	 * @param string|int|float $value Value, or left out if supplied a key-value array
 	 */
 	public function index($key, $value = '#'): Index {
-		return new Index(is_array($key) ? $key : [$key => $value]);
+		if(is_array($key)) {
+			$index = [];
+
+			foreach($key as $k => $v) {
+				if(!is_scalar($v)) continue;
+
+				$index[$k] = trim((string)$value);
+			}
+
+			return new Index($index);
+		}
+		elseif(is_scalar($value)) {
+			return new Index([$key => trim((string)$value)]);
+		}
+
+		return new Index();
 	}
 
 	/**
