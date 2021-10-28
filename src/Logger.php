@@ -312,10 +312,15 @@ abstract class Logger {
 		}
 		else {
 			foreach($e->getTrace() as $item) {
-				$crumb = [
-					'path' => $item['file'],
-					'line' => $item['line']
-				];
+				$crumb = [];
+
+				if(isset($item['file'])) {
+					$crumb['path'] = $item['file'];
+				}
+	
+				if(isset($item['line'])) {
+					$crumb['line'] = $item['line'];
+				}
 	
 				if(!empty($item['function'])) {
 					$crumb['callee'] = $item['function'];
