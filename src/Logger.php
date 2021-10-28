@@ -111,7 +111,7 @@ abstract class Logger {
 			foreach($key as $k => $v) {
 				if(!is_scalar($v)) continue;
 
-				$index[$k] = trim((string)$value);
+				$index[$k] = trim((string)$v);
 			}
 
 			return new Index($index);
