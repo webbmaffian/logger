@@ -15,6 +15,7 @@ const DEBUG = 7;
 abstract class Logger {
 	private $last_timestamp = null;
 	private $context = [];
+	private $persisted_context = [];
 	protected $options = [];
 
 
@@ -34,71 +35,84 @@ abstract class Logger {
 		}
 	}
 
-
+	/**
+	 * Emergency: System is unusable, e.g. total datacenter outages.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
 	public function emergency(...$args): void {
 		$this->log(EMERGENCY, $args);
 	}
 
+	/**
+	 * Alert: Action must be taken immediately, e.g. hints that might lead to total datacenter outages.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
 	public function alert(...$args): void {
 		$this->log(ALERT, $args);
 	}
 
+	/**
+	 * Critical: Critical conditions, e.g. service, database or connection disruptions.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
 	public function critical(...$args): void {
 		$this->log(CRITICAL, $args);
 	}
 
+	/**
+	 * Error: Error conditions, e.g. fatal application errors.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
 	public function error(...$args): void {
 		$this->log(ERROR, $args);
 	}
 
-	public function warning(...$args): void {
-		$this->log(WARNING, $args);
-	}
-
-	public function notice(...$args): void {
-		$this->log(NOTICE, $args);
-	}
-
-	public function informational(...$args): void {
-		$this->log(INFORMATIONAL, $args);
-	}
-
-	public function debug(...$args): void {
-		$this->log(DEBUG, $args);
-	}
-
 	/**
-	 * Alias for Logger::emergency()
-	 */
-	public function fatal(...$args): void {
-		$this->log(EMERGENCY, $args);
-	}
-
-	/**
-	 * Alias for Logger::critical()
-	 */
-	public function crit(...$args): void {
-		$this->log(CRITICAL, $args);
-	}
-
-	/**
-	 * Alias for Logger::warning()
+	 * Warning: Warning conditions, e.g. non-fatal errors or possible security threats.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
 	 */
 	public function warn(...$args): void {
 		$this->log(WARNING, $args);
 	}
 
 	/**
-	 * Alias for Logger::informational()
+	 * Notice: Normal but significant conditions, e.g. errors that was solved automatically but should be looked into, like undefined variables.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
+	public function notice(...$args): void {
+		$this->log(NOTICE, $args);
+	}
+
+	/**
+	 * Informational: Informational messages, e.g. events or audit logs.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
 	 */
 	public function info(...$args): void {
 		$this->log(INFORMATIONAL, $args);
 	}
 
+	/**
+	 * Debug: Debug-level messages, e.g. step-by-step actions of events.
+	 * @param Throwable|Index|Meta|Raw|mixed ...$args
+	 */
+	public function debug(...$args): void {
+		$this->log(DEBUG, $args);
+	}
+
+	/**
+	 * Return an Index object, to be used in logging or context.
+	 * @param string|array $key Key string, or key-value array
+	 * @param string|int|float $value Value, or left out if supplied a key-value array
+	 */
 	public function index($key, $value = '#'): Index {
 		return new Index(is_array($key) ? $key : [$key => $value]);
 	}
 
+	/**
+	 * Return a Meta object, to be used in logging or context.
+	 * @param string|array $key Key string, or key-value array
+	 * @param mixed $value Value, or left out if supplied a key-value array
+	 */
 	public function meta($key, $value = ''): Meta {
 		if(is_object($key) && $key instanceof JsonSerializable) {
 			return new Meta((array)($key->jsonSerialize()));
@@ -107,20 +121,39 @@ abstract class Logger {
 		return new Meta(is_array($key) ? $key : [$key => $value]);
 	}
 
+	/**
+	 * Return a Raw object, to be used in logging or context. Will set literal log entry parameter(s)
+	 * @param string|array $key Key string, or key-value array
+	 * @param mixed $value Value, or left out if supplied a key-value array
+	 */
 	public function raw($key, $value = null): Raw {
 		return new Raw(is_array($key) ? $key : [$key => $value]);
 	}
 
-	public function set_context(...$args): int {
-		$this->context[] = array_map(function($arg) {
-			return (is_array($arg) ? new Meta($arg) : $arg);
-		}, $args);
+	/**
+	 * Add a new context layer.
+	 * @param Index|Meta|Raw ...$args
+	 */
+	public function set_context(Map ...$context): int {
+		$this->context[] = $context;
 
 		return count($this->context) - 1;
 	}
 
+	/**
+	 * Reset latest context, or reset to a specific previous context.
+	 * @param int $index (optional) Specific context index
+	 */
 	public function reset_context(?int $index = -1): void {
 		array_splice($this->context, $index);
+	}
+
+	/**
+	 * Add a new persistent context layer, which can't be reset.
+	 * @param Index|Meta|Raw ...$args
+	 */
+	public function persist_context(Map ...$context): void {
+		$this->persisted_context[] = $context;
 	}
 
 	private function log(int $severity, array $args): void {
@@ -168,19 +201,8 @@ abstract class Logger {
 		$stacktrace = null;
 		$message_parts = [];
 
-		foreach($this->context as $context) {
-			foreach($context as $arg) {
-				if($arg instanceof Index) {
-					$entry['indices'] = array_merge($entry['indices'], $arg->entries());
-				}
-				elseif($arg instanceof Meta) {
-					$entry['meta'] = array_merge($entry['meta'], $arg->entries());
-				}
-				elseif($arg instanceof Raw) {
-					$entry = array_merge($entry, $arg->entries());
-				}
-			}
-		}
+		self::apply_context($this->persisted_context, $entry);
+		self::apply_context($this->context, $entry);
 
 		foreach($args as $arg) {
 			if($this->options['message_handler']($arg, $message_parts, $entry)) {
@@ -239,6 +261,26 @@ abstract class Logger {
 		if(empty($entry['meta'])) unset($entry['meta']);
 
 		$this->send(json_encode($entry));
+	}
+
+	/**
+	 * @param Map[] $contexts
+	 * @param array &$entry
+	 */
+	static private function apply_context(array $contexts, array &$entry): void {
+		foreach($contexts as $context) {
+			foreach($context as $arg) {
+				if($arg instanceof Index) {
+					$entry['indices'] = array_merge($entry['indices'], $arg->entries());
+				}
+				elseif($arg instanceof Meta) {
+					$entry['meta'] = array_merge($entry['meta'], $arg->entries());
+				}
+				elseif($arg instanceof Raw) {
+					$entry = array_merge($entry, $arg->entries());
+				}
+			}
+		}
 	}
 
 	static private function get_stacktrace(Throwable $e): array {

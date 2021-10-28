@@ -38,13 +38,13 @@ Takes any kind and quantity of arguments.
 
 ```php
 <?php
-$logger->emergency(); // Or: $logger->fatal();
+$logger->emergency();
 $logger->alert();
-$logger->critical(); // Or: $logger->crit();
+$logger->critical();
 $logger->error();
-$logger->warning(); // Or: $logger->warn();
+$logger->warn();
 $logger->notice();
-$logger->informational(); // Or: $logger->info();
+$logger->info();
 $logger->debug();
 ```
 
