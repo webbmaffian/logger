@@ -275,7 +275,7 @@ abstract class Logger {
 		if(empty($entry['indices'])) unset($entry['indices']);
 		if(empty($entry['meta'])) unset($entry['meta']);
 
-		$this->send(json_encode($entry));
+		$this->send(json_encode($entry, (defined('JSON_INVALID_UTF8_SUBSTITUTE') ? JSON_INVALID_UTF8_SUBSTITUTE : 0)));
 	}
 
 	/**
