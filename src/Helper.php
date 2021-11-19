@@ -2,7 +2,7 @@
 namespace Webbmaffian\Logger;
 
 class Helper {
-	static public function string_to_trace(string $string): ?array {
+	static public function string_to_trace(string $string): array {
 		$result = [
 			'message' => $string,
 			'stacktrace' => []
@@ -30,12 +30,9 @@ class Helper {
 				}
 
 				$crumb['callee'] = $match['callee'];
-
 				$result['stacktrace'][] = $crumb;
 			}
 		}
-
-		$result['stacktrace'] = array_reverse($result['stacktrace']);
 
 		return $result;
 	}
