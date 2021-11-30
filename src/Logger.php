@@ -164,6 +164,21 @@ abstract class Logger {
 	}
 
 	/**
+	 * Get the current trace ID.
+	 */
+	public function get_trace_id(): ?string {
+		foreach($this->context as $ctx) {
+			foreach($ctx as $ctx_data) {
+				if(($ctx_data instanceof Index) && $ctx_data->offsetExists('_trace')) {
+					return $ctx_data->offsetGet('_trace');
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Add a new persistent context layer, which can't be reset.
 	 * @param Index|Meta|Raw ...$args
 	 */
